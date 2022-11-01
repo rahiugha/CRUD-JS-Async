@@ -1,6 +1,6 @@
 import { clientServices } from "../services/cliente-services.js";
 
-const crearNuevaLinea = (nombre, email) => {
+const crearNuevaLinea = (nombre, email, id) => {
     const linea = document.createElement("tr");
     const contenido = `
             <td class="td" data-td>
@@ -11,7 +11,7 @@ const crearNuevaLinea = (nombre, email) => {
               <ul class="table__button-control">
                 <li>
                   <a
-                    href="../screens/editar_cliente.html"
+                    href="../screens/editar_cliente.html?id=${id}"
                     class="simple-button simple-button--edit"
                     >Editar</a
                   >
@@ -19,23 +19,39 @@ const crearNuevaLinea = (nombre, email) => {
                 <li>
                   <button
                     class="simple-button simple-button--delete"
-                    type="button"
+                    type="button" id="${id}"
                   >
                     Eliminar
                   </button>
                 </li>
               </ul>
             </td>`
-            linea.innerHTML = contenido;
-            return linea;
+    linea.innerHTML = contenido;
+    const btn = linea.querySelector("button");
+    
+    btn.addEventListener("click", async() =>{
+      const id = btn.id;
+      try {
+        const respuesta = await clientServices.eliminarCliente(id)
+        if (id && btn.id) {
+          console.log(respuesta);
+        } else {
+          throw new Error();
+        }
+      } catch (error) {
+        window.location.href = "/screens/error.html";
+    }
+    })
+    return linea;
 }
 
 const table = document.querySelector("[data-table]");
 
     clientServices.listaClientes().then((data) => {
-    data.forEach(perfil => {
-        const nuevaLinea = crearNuevaLinea(perfil.nombre,perfil.email);
+    data.forEach(({nombre, email, id}) => {
+        const nuevaLinea = crearNuevaLinea(nombre, email, id);
         table.appendChild(nuevaLinea);
     });    
     })
     .catch((error) => alert ("Ocurrió un error"));
+
